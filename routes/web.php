@@ -11,8 +11,11 @@
 |
 */
 
-Route::get('/score', function () {
-    return view('score');
-});
+//Route::get('/score', function () {
+//    return view('score');
+//});
 
+
+Route::get('/typing', ['as' => 'app.game.index', 'uses' => 'GameController@index']);
+//Route::get('/score', ['as' => 'app.game.index', 'uses' => 'GameController@index']);
 
