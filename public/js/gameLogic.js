@@ -1,6 +1,5 @@
-
 var FastTyping = function () {
-    /** describing states   
+    /** describing states
      * @type {string}
      */
     const STATE_REGISTER = 'register';
@@ -10,7 +9,20 @@ var FastTyping = function () {
 
     var name,                                               //for later use in RegisterLogics
         lastState,                                           //for later use in switch
-        level;
+        level,
+        score,
+        ScoreData,
+        duration,
+        average_speed;
+
+    /**
+     * prescribing route as value for html usage
+     * @param value
+     */
+
+    this.setScoreData = function (value) {
+        ScoreData = value;
+    };
 
 
     /**
@@ -71,8 +83,7 @@ var FastTyping = function () {
 
     //---------------------------------------------------------- Select Level ----------------------------------------------------------------
 
-    var LevelSelectionLogics = function ()
-    {
+    var LevelSelectionLogics = function () {
         var view = $('#level');                                                         //jquery object created, now we can use jquery functions
         var button = $('#next');
 
@@ -91,8 +102,7 @@ var FastTyping = function () {
         /** var level with checkbox value defined by them names;
          * enables chosen inputs value and changes state
          */
-        function enable()
-        {
+        function enable() {
             button.click(function () {
                 level = $('input[name = optionsRadios]:checked').val();
                 changeState(STATE_GAME)
@@ -108,24 +118,26 @@ var FastTyping = function () {
 
     //---------------------------------------------------------------- THE GAME ----------------------------------------------------------
 
-    var GameLogics = function ()
-    {
-        var view = $('#game');
-        var letters = 'abcdefghijklmnprstuvwxyz';
-        var timeOut;
-        var letterPlacement = $('#letter');
-        var letterKey;
+    var GameLogics = function () {
+        var view = $('#game'),
+            letters = 'abcdefghijklmnprstuvwxyz',
+            timeOut,
+            letterPlacement = $('#letter'),
+            letterKey,
 
-        var liveCount;
-        var score;
+            liveCount,
 
-        var userInput = true;
-        var is_golden;
+            userInput = true,
+            is_golden,
 
-        var letterAppearance;
-        var keyUpTime;
-        var amount;
-        var prise = '<img src=https://img.lrytas.lt/show_foto/?f=4&s=19&id=1697341>';
+            letterAppearance,
+            keyUpTime,
+            amount,
+            prise = '<img src=https://img.lrytas.lt/show_foto/?f=4&s=19&id=1697341>',
+            gameStart,
+            gameFinish,
+            totalKeys = 0,                                          //need to be 0 for every new start
+            totalAverage = 0;
 
 
         this.show = function () {
@@ -152,7 +164,7 @@ var FastTyping = function () {
              * adds 1 live every 20 scores
              */
 
-            if (score % 20 === 0){
+            if (score % 20 === 0) {
                 liveCount += 1;
                 $('#liveScore').html(liveCount);
             }
@@ -160,16 +172,16 @@ var FastTyping = function () {
             /**
              * turns variable into opposite that i would start to spin from negative value and gives 5 points if it's true
              */
-            if (is_golden){
+            if (is_golden) {
                 is_golden = false;
-                for (var i = 0; i < 5; i++){
+                for (var i = 0; i < 5; i++) {
                     updateScore();
                 }
             } else {
                 score += 1;
             }
 
-            if (score === 150){
+            if (score === 150) {
                 victory();
             }
         }
@@ -180,11 +192,14 @@ var FastTyping = function () {
 
         function removeLive() {
             liveCount -= 1;
-            if (liveCount === 0){
-                changeState(STATE_GAME_OVER)
+            if (liveCount === 0) {
+                gameFinish = Date.now();
+                durationResult();
+                changeState(STATE_GAME_OVER);
             }
 
             $('#liveScore').html(liveCount);
+
         }
 
         function disable() {
@@ -198,8 +213,9 @@ var FastTyping = function () {
 
         function enable() {
             $(window).keyup(function (e) {
-                if (e.key === letters[letterKey]){
-                    updateScore()
+                if (e.key === letters[letterKey]) {
+                    updateScore();
+                    averageSpeedResult()
                 } else {
                     removeLive();
                 }
@@ -213,6 +229,9 @@ var FastTyping = function () {
 
                 userInput = true;
                 changeLetter();
+
+                gameStart = Date.now();
+                durationResult();
             })
         }
 
@@ -225,14 +244,14 @@ var FastTyping = function () {
             letterKey = Math.round(Math.random() * (letters.length - 1));
             letterPlacement.html(letters[letterKey]);
             letterAppearance = Date.now();                                       //setting time when a letter appears
-            timeOut = setTimeout(changeLetter, level*1000);
+            timeOut = setTimeout(changeLetter, level * 1000);
 
-            if (!userInput){
+            if (!userInput) {
                 removeLive();
             }
             userInput = false;
 
-            if (Math.random() < 0.1){
+            if (Math.random() < 0.1) {
                 is_golden = true;
                 letterPlacement.addClass('golden');
             } else {
@@ -249,6 +268,18 @@ var FastTyping = function () {
         function victory() {
             $('#gift').html(prise);
         }
+
+        function durationResult() {
+            duration = (gameFinish - gameStart) * 0.001;
+            $('#duration').html(duration);
+        }
+
+        function averageSpeedResult() {
+            totalAverage += Date.now() - letterAppearance;
+            totalKeys++;
+            average_speed = (totalAverage / totalKeys) * 0.001;
+        }
+
     };
 
     var game = new GameLogics();
@@ -256,23 +287,62 @@ var FastTyping = function () {
     //-------------------------------------------------------------- Game Over -------------------------------------------------
 
     var GameOverLogics = function () {
+
         var view = $('#over');
         var lastText = 'Oops.. you just lost the game:)';
         var again = $('#again');
 
         this.show = function () {
             view.removeClass('hidden');
+            enable();
         };
 
         this.hide = function () {
             view.addClass('hidden')
         };
 
+        function enable() {
+            saveData();
+        }
+
         $('#textOver').html(lastText);
 
         again.click(function () {
             changeState(STATE_REGISTER)
         });
+
+        /**
+         * Sets the default values for future AJAX requests
+         */
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        /**
+         * exchanging data with a server, and update parts of a web page - without reloading the whole page.
+         */
+
+        function saveData() {
+
+            var data = {
+                name: name,
+                level: level,
+                score: score,
+                duration: duration,
+                average_speed: average_speed
+            };
+
+            console.log(data);
+
+            $.ajax({
+                url: ScoreData,
+                method: "POST",
+                data: data
+            });
+        }
     };
 
     var gameOver = new GameOverLogics();
