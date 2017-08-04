@@ -20,8 +20,8 @@ class CreateKbGameTable extends Migration {
 			$table->softDeletes();
 			$table->string('name');
 			$table->string('score');
-			$table->string('duration');
-			$table->string('average_speed');
+			$table->string('duration')->nullable();
+			$table->string('average_speed')->nullable();
 			$table->enum('level', array('easy','medium','hard'));
 		});
 	}
