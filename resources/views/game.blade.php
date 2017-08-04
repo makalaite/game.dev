@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
           integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="css/style.css">
@@ -55,9 +56,12 @@
     <h1>say whaat?! <span id="textOver"></span></h1>
 
     <button id="again">Try again?</button>
+    <a href="{{route('app.game.index')}}"><button id="viewScore"> View score</button></a>
 </div>
 
+<div>
 
+</div>
 
 </body>
 <script type="text/javascript" src="js/gameLogic.js"></script>
@@ -69,6 +73,7 @@
         integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
         crossorigin="anonymous"></script>
 <script>
-    new FastTyping();                                                                   //it loads automatically after all scripts. if using 'new' you can add it to variable use it like var game = new FastTyping();
+    var scoreD = new FastTyping();                                                                //it loads automatically after all scripts. if using 'new' you can add it to variable use it like var game = new FastTyping();
+    scoreD.setScoreData('{{route('app.game.store')}}');
 </script>
 </html>
