@@ -11,11 +11,15 @@
 |
 */
 
-//Route::get('/score', function () {
-//    return view('score');
-//});
+Route::get('/game', function () {
+    return view('game');
+});
 
 
-Route::get('/typing', ['as' => 'app.game.index', 'uses' => 'GameController@index']);
-//Route::get('/score', ['as' => 'app.game.index', 'uses' => 'GameController@index']);
+Route::post('/game', ['as' => 'app.game.store', 'uses' => 'GameController@store']);
+
+
+Route::get('/score', ['as' => 'app.game.index', 'uses' => 'GameController@scores']);
+
+//Route::post('/typing', ['as' => 'app.game.store', 'uses' => 'GameController@store']);
 
