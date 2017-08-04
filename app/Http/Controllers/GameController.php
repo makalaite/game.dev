@@ -1,6 +1,8 @@
 <?php namespace App\Http\Controllers;
 
+use App\Models\GameModel;
 use Illuminate\Routing\Controller;
+use Ramsey\Uuid\Uuid;
 
 class GameController extends Controller {
 
@@ -12,8 +14,16 @@ class GameController extends Controller {
 	 */
 	public function index()
 	{
-		return view('game');
+        return view('score');
 	}
+
+	public function scores()
+    {
+        $config['level3'] = GameModel::where('level', 'hard')->orderBy('score', 'desc')->get()->toArray();
+        $config['level6'] = GameModel::where('level', 'medium')->orderBy('score', 'desc')->get()->toArray();
+        $config['level9'] = GameModel::where('level', 'easy')->orderBy('score', 'desc')->get()->toArray();
+        dd($config);
+    }
 
 	/**
 	 * Show the form for creating a new resource.
@@ -34,8 +44,18 @@ class GameController extends Controller {
 	 */
 	public function store()
 	{
-		//
-	}
+		$data = request()->all();
+
+        GameModel::create([
+		    'id' => Uuid::uuid4(),
+            'name' => $data['name'],
+            'level' => $data['level'],
+            'score' => $data['score'],
+            'duration' => $data['duration'],
+            'average_speed' => $data['average_speed']
+        ]);
+        return view('game');
+    }
 
 	/**
 	 * Display the specified resource.
